@@ -3,25 +3,25 @@ import 'package:webfeed/domain/atom_link.dart';
 import 'package:webfeed/domain/atom_person.dart';
 import 'package:webfeed/domain/atom_source.dart';
 import 'package:webfeed/domain/media/media.dart';
-import 'package:webfeed/util/datetime.dart';
-import 'package:webfeed/util/iterable.dart';
+import 'package:webfeed/util/helpers.dart';
 import 'package:xml/xml.dart';
+import 'dart:convert';
 
 class AtomItem {
-  final String? id;
-  final String? title;
-  final DateTime? updated;
+  final String id;
+  final String title;
+  final String updated;
 
-  final List<AtomPerson>? authors;
-  final List<AtomLink>? links;
-  final List<AtomCategory>? categories;
-  final List<AtomPerson>? contributors;
-  final AtomSource? source;
-  final String? published;
-  final String? content;
-  final String? summary;
-  final String? rights;
-  final Media? media;
+  final List<AtomPerson> authors;
+  final List<AtomLink> links;
+  final List<AtomCategory> categories;
+  final List<AtomPerson> contributors;
+  final AtomSource source;
+  final String published;
+  final String content;
+  final String summary;
+  final String rights;
+  final Media media;
 
   AtomItem({
     this.id,
@@ -39,33 +39,55 @@ class AtomItem {
     this.media,
   });
 
+  String getAuthorsJson(){
+    List<String> authorsStrings = [];
+    authors.forEach((author) {
+      authorsStrings.add(jsonEncode(author.toJson()));
+    });
+    //print("authorjson: "+jsonEncode(authorsStrings));
+    return jsonEncode(authorsStrings);
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'updated': updated,
+      'authors': getAuthorsJson(),
+      'links': "",
+      'categories' : "",
+      'contributors': "",
+      'source': "",
+      'published': published,
+      'content': content,
+      'summary': summary,
+      'rights': rights,
+      'media':""
+    };
+  }
+
   factory AtomItem.parse(XmlElement element) {
     return AtomItem(
-      id: element.findElements('id').firstOrNull?.text,
-      title: element.findElements('title').firstOrNull?.text,
-      updated: parseDateTime(element.findElements('updated').firstOrNull?.text),
-      authors: element
-          .findElements('author')
-          .map((e) => AtomPerson.parse(e))
-          .toList(),
-      links:
-          element.findElements('link').map((e) => AtomLink.parse(e)).toList(),
-      categories: element
-          .findElements('category')
-          .map((e) => AtomCategory.parse(e))
-          .toList(),
-      contributors: element
-          .findElements('contributor')
-          .map((e) => AtomPerson.parse(e))
-          .toList(),
-      source: element
-          .findElements('source')
-          .map((e) => AtomSource.parse(e))
-          .firstOrNull,
-      published: element.findElements('published').firstOrNull?.text,
-      content: element.findElements('content').firstOrNull?.text,
-      summary: element.findElements('summary').firstOrNull?.text,
-      rights: element.findElements('rights').firstOrNull?.text,
+      id: findElementOrNull(element, "id")?.text,
+      title: findElementOrNull(element, "title")?.text,
+      updated: findElementOrNull(element, "updated")?.text,
+      authors: element.findElements("author").map((element) {
+        return AtomPerson.parse(element);
+      }).toList(),
+      links: element.findElements("link").map((element) {
+        return AtomLink.parse(element);
+      }).toList(),
+      categories: element.findElements("category").map((element) {
+        return AtomCategory.parse(element);
+      }).toList(),
+      contributors: element.findElements("contributor").map((element) {
+        return AtomPerson.parse(element);
+      }).toList(),
+      source: AtomSource.parse(findElementOrNull(element, "source")),
+      published: findElementOrNull(element, "published")?.text,
+      content: findElementOrNull(element, "content")?.text,
+      summary: findElementOrNull(element, "summary")?.text,
+      rights: findElementOrNull(element, "rights")?.text,
       media: Media.parse(element),
     );
   }
