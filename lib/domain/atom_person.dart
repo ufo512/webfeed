@@ -15,4 +15,10 @@ class AtomPerson {
       email: element.findElements('email').firstOrNull?.text,
     );
   }
+  
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'uri': uri,
+    'email': email,
+  };
 }
