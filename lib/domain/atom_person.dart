@@ -6,7 +6,7 @@ class AtomPerson {
   final String? uri;
   final String? email;
 
-  AtomPerson({this.name, this.uri, this.email});
+  AtomPerson(this.name, this.uri, this.email);
 
   factory AtomPerson.parse(XmlElement element) {
     return AtomPerson(
